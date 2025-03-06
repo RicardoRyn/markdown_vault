@@ -51,5 +51,3 @@ cd ...  # 返回父目录的父目录
 
 let x = if true {-1} else {1}
 ```
-
-jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
