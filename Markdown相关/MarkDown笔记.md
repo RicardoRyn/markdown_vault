@@ -58,7 +58,7 @@ $1+1=2$
 
 插入图片 `! + [] + ()`
 
-![](D:\Pictures\照片\Ricardo\Burn.png)
+![](https://imgur.com/2esEzjK.png)
 
 `三个反点 + 语言名称` 表示代码
 
@@ -73,4 +73,3 @@ int a = 100;
 ```javascript
 document.write('hehe');
 ```
-
