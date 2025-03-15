@@ -1,0 +1,12 @@
+{
+	"nodes":[
+		{"id":"61db004283c010a0","x":-400,"y":-260,"width":250,"height":200,"type":"text","text":"nvim-treesitter\nNeovim 下的 Tree-sitter 配置和抽象层，它的目标是给 Neovim 提供一个简单的 Tree-sitter 接口，并且提供多个基于 Tree-sitter 的基础功能模块。"},
+		{"id":"7b2075e1bcbfde74","x":-400,"y":40,"width":250,"height":160,"type":"text","text":"language parser\n特定的 nvim-treesitter 插件版本只与特定的 language parser 版本匹配。每次更新nvim-treesitter时，也必须要更新所有已经安装的 language parsers。"},
+		{"id":"d95223ef5c394fb4","x":-400,"y":-480,"width":250,"height":176,"type":"text","text":"Tree-sitter\n实现代码高亮。一个解析器生成器工具和增量解析库，可以在源文件编辑的同时高效的实时生成语法树。"}
+	],
+	"edges":[
+		{"id":"b34c1cb906de2220","fromNode":"d95223ef5c394fb4","fromSide":"bottom","toNode":"61db004283c010a0","toSide":"top"},
+		{"id":"02c8a9928144203b","fromNode":"61db004283c010a0","fromSide":"bottom","toNode":"7b2075e1bcbfde74","toSide":"top"},
+		{"id":"14982cddbfba07d4","fromNode":"61db004283c010a0","fromSide":"left","toNode":"7b2075e1bcbfde74","toSide":"left","label":"可以针对不同的语言\n安装不同的language parser"}
+	]
+}
