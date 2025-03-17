@@ -13,11 +13,25 @@ conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-for
 conda config --set show_channel_urls yes  # 以后下载包用来显示从哪个url里下载
 # 设置乱了，可以用以下代码恢复设置
 conda config --remove-key channels
+# 展示自己用的哪些channels
+conda config --show channels
 ```
 
 这些文本会写到家目录（默认位置）的`.condarc`文件中
 
 `.condarc`文本里有一行默认的`- defaults`，我们可以去掉这一行，避免从国外网址下载包，就比较慢
+```
+channels:
+  - defaults
+show_channel_urls: true
+default_channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+custom_channels:
+  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+```
 
 ---
 
