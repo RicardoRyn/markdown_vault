@@ -142,6 +142,7 @@ rjxgit push -u origin main
 
 ```bash
 rjxgit add -f <file>  # 强制追踪
-rjxgit rm --cached <file>  # 强制删除
+rjxgit rm --cached <file>  # 强制删除文件
+rjxgit rm -r --cached <file>  # 强制文件夹
 ```
 

@@ -1,0 +1,15 @@
+{
+  "promptDelete": false,
+  "vimMode": true,
+  "focusNewTab": true,
+  "defaultViewMode": "preview",
+  "showLineNumber": true,
+  "rightToLeft": false,
+  "spellcheck": false,
+  "showInlineTitle": false,
+  "readableLineLength": false,
+  "strictLineBreaks": true,
+  "foldHeading": true,
+  "alwaysUpdateLinks": true,
+  "showUnsupportedFiles": true
+}

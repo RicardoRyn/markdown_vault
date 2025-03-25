@@ -297,6 +297,14 @@ let teams_scores = [[team score plays]; ['Boston Celtics' 311 3] ['Golden State 
 $teams_scores | drop column  # 删除最后一列
 ```
 
+**读取一个csv文件（无表头），将矩阵中所有元素乘以1998，然后写入新的csv文件：**
+
+```nushell
+open rm_rjx.csv -r | from csv --noheaders |
+update cells {|value| ($value * 1998)} |
+to csv --noheaders | save -f rm_rjx1.csv
+```
+
 ### 4. 文件
 
 使用默认编辑器来打开文件
@@ -681,7 +689,7 @@ Nushell Object Notation。仿JavaScript Object Notation (JSON)。即，部分数
 1. 允许注释
 2. 可以不加逗号
 
-****但是，NUON不能表示所有的数据类型。例如，NUON不允许序列化块 serialization of blocks***
+***但是，NUON不能表示所有的数据类型。例如，NUON不允许序列化块 serialization of blocks***
 
 ## 处理字符串
 
@@ -776,3 +784,260 @@ line1; line2 | line3
 ```
 
 上例中：`line1`的结果正常打印在终端中。`line2 | line3`的数据结果将在`line1`之后显示。
+
+## 特殊变量`$in`
+
+`$in`持有当前管道的输入
+
+### `$in`作为命令参数/表达式的一部分
+
+比较下面2条命令：
+
+```nushell
+# 命令1：使用子表达式形式
+# 优点：一行
+touch $"((date now) + 1day | format date '%F')_工作汇报.txt"
+
+# 命令2：使用管道形式
+# 优点：可添加注释。每行都可以通过inspect来debug
+date now                    # 1: today
+| $in + 1day                # 2: tomorrow
+| format date '%F'          # 3: Format as YYYY-MM-DD
+| $'($in)_工作汇报.txt'      # 4: Format the directory name
+| touch $in                 # 5: Create the directory
+```
+
+### 过滤闭包时的管道输入可用到`$in`
+
+```nushell
+1..10 | each {$in * 2}
+```
+
+有时候一些filter会为其闭包分配一个更加方便的值。例如：
+
+```nushell
+# 以下2条命令等价，因为update命令自动分配了变量名
+ls | update name {|file| $file.name | str upcase}
+ls | update name {str upcase}
+```
+
+### `$in`规则
+
+规则1：在闭包/块中用作管道的第一个位置时，`$in`指的是对这个闭包/块的输入
+
+```nushell
+def rm_rjx [] {
+  print $in
+}
+
+"hello world" | rm_rjx
+```
+
+规则1.5：在当前作用域内始终成立。
+
+```nushell
+[a, b, c] | each {
+  print $in
+  print $in
+  $in
+}
+
+# 将打印
+a
+a
+b
+b
+c
+c
+╭───┬───╮
+│ 0 │ a │
+│ 1 │ b │
+│ 2 │ c │
+╰───┴───╯
+```
+
+规则2：在任何位置（除了第一个位置），`$in`表示的是上一个表达式的结果
+
+```nushell
+4 |
+$in * $in |
+$in / 2 |
+$in  # 最后返回8
+```
+
+规则2.5：在闭包/块内部，新的作用域中仅新的`$in`有效
+
+```nushell
+4 | do {
+  print $in            # 4
+
+  let p = (
+    $in * $in
+    | $in / 2          # 8 
+  )
+
+  print $in            # 4
+  print $p             # 8
+}
+```
+
+规则3：在没有输入的情况下，`$in`为空
+
+```nushell
+1 | do {$in | describe}  # int
+"" | do {$in | describe}  # string
+{} | do {$in | describe}  # record
+[] | do {$in | describe}  # list<any>
+{||} | do {$in | describe}  # closure
+
+() | do {$in | describe}  # nothing
+do {$in | describe}  # nothing
+```
+
+规则4：在由分号`;`分隔的多行语句中，`$in`不能用于捕获上一条语句的结果
+
+```nushell
+ls / | get name; $in | describe  # nothing
+ls / | get name | $in | describe  # list<string>
+```
+
+不太建议使用太多的`$in`，内部`$in`会强制将`PipelineData`转换成`Value`，可能会导致性能损失。
+
+## 外部命令
+
+数据将从内部命令流向外部命令。这些数据将被转换为字符串，以便可以发送到外部命令的 `stdin`。
+
+数据从外部命令进入 Nu 时，将以字节形式进入，Nushell 将尝试自动将其转换为 UTF-8 文本。如果成功，将发送一个文本数据流到内部命令。如果失败，将发送一个二进制数据流到内部命令。
+
+内部命令可以通过`help <internal_command>`查看使用方法。注意有些命令不接受输入，想要放入管道，需要结合`$in`，例如：
+
+```nushell
+help ls
+# => […]
+# => Input/output types:
+# =>   ╭───┬─────────┬────────╮
+# =>   │ # │  input  │ output │
+# =>   ├───┼─────────┼────────┤
+# =>   │ 0 │ nothing │ table  │
+# =>   ╰───┴─────────┴────────╯
+
+help sleep
+# => […]
+# => Input/output types:
+# =>   ╭───┬─────────┬─────────╮
+# =>   │ # │  input  │ output  │
+# =>   ├───┼─────────┼─────────┤
+# =>   │ 0 │ nothing │ nothing │
+# =>   ╰───┴─────────┴─────────╯
+```
+
+```nushell
+echo .. | ls $in
+
+echo 1sec | sleep  # 报错
+```
+
+### 输出结果到外部命令
+
+有时我们想将nushell中的结构化数据输出到外部命令来做进一步处理。但是nushell的默认输出可能不是你想要的。例如，假设你想检查`"/usr/share/vim/runtime`中名为`tutor`的文件并检查其所有权，你可能会写成：
+
+```nushell
+ls /usr/share/nvim/runtime/ | get name | ^grep tutor | ^ls -la $in
+```
+
+但是nushell的结构化数据会添加`╭` 、 `─` 、 `┬` 、 `╮`的字符来渲染它们。这个时候，你应该明确的将数据传递为字符串，然后再将其传递给外部命令：
+
+```nushell
+ls /usr/share/nvim/runtime/ | get name | to text | ^grep tutor | tr -d '\n' | ^ls -la $in
+```
+
+实际上，对于这种简单的用法，你可以使用`find`命令：
+
+```nushell
+ls /usr/share/nvim/runtime/ | get name | find tutor | ansi strip | ^ls -al ...$in
+```
+
+### nushell中的命令输出
+
+nushell中的命令类似于函数，大多数命令不会打印到`stdout`，而是直接返回数据
+
+```nushell
+do {ls; ls; ls; "What?!"}  # 只会返回一个“What?!”
+do {^ls; ^ls; ^ls; "What?!"}  # 会打印三次ls内容
+
+do { $env.config.table.mode = "none"; ls }  # 输出依旧有边框，因为它等同于下面一条
+do { $env.config.table.mode = "none"; ls } | table  # 输出依旧有边框
+
+do { $env.config.table.mode = "none"; ls | table }  # 输出没有边框
+do { $env.config.table.mode = "none"; print (ls) }  # 输出没有边框
+```
+
+# 处理字符串
+
+## 单引号字符串
+
+单引号字符串对其给定的文本**没有任何影响**，因此非常适合用于存储各种文本数据。
+```nushell
+'hello\nworld'  # hello\nworld
+```
+
+## 双引号字符串
+
+双引号字符串支持转义，可以用于更加复杂的文本
+
+```nushell 
+"hello\nworld"
+
+# hello 
+# world
+```
+
+nushell支持以下转义：
+```text
+`\"`
+`\'`
+`\\`
+`\/`
+`\b`  # backspace 退格
+`\f`  # formfeed 换页
+`\r`  # carriage return 回车
+`\n`  # newline 换行
+`\t`  # tab 制表符
+`\u{X...}`  # 十六进制
+```
+
+## 原始字符串
+
+nushell使用`r#'`和`'#` 包围一串字符，表示原始字符，可用于windows路径填写
+
+```nushell
+r#'Raw strings can contain 'quoted' text.'#
+```
+
+甚至可以嵌套:
+
+```nushell
+r###'r##'This is an example of a raw string.'##'###
+# 会打印“r##'This is an example of a raw string.'##”
+```
+
+## 裸字符串
+
+nushell中，由单个“单词”组成的字符串也可以不使用引号来编写。但是如果在一行中只写一个裸单词，或者在`()`中使用，它会被识别为一个命令。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

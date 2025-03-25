@@ -1,0 +1,13 @@
+{
+  "accentColor": "",
+  "interfaceFontFamily": "Maple Mono NF CN",
+  "textFontFamily": "Maple Mono NF CN",
+  "monospaceFontFamily": "Maple Mono NF CN",
+  "showViewHeader": false,
+  "showRibbon": false,
+  "cssTheme": "Maple",
+  "theme": "obsidian",
+  "baseFontSize": 15,
+  "baseFontSizeAction": true,
+  "nativeMenus": false
+}

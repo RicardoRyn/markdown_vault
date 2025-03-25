@@ -583,7 +583,7 @@ bi-sided - Separate the clusters if the voxels have different signs
 
 分别提取incongruent和congruent的β值，然后再比较这两者。只有这样，才能知道incongruent-congruent效应是由于incongruent更大还是congruent更小还是两者都有造成的
 
-使用下面脚本，注意congruent条件的coef是sub-brick #1，而incongruent的coef是sub-brick #4：
+使用下面脚本，注意congruent条件的coef是sub-brick "#1，而incongruent的coef是sub-brick" "#4："
 
 ```bash
 #!/bin/bash
