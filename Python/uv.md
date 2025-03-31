@@ -24,18 +24,19 @@ uv add numpy pandas nibable scipy ipykernel
 uv remove neuromaps
 ```
 
-# 4. 打包发布
+# 4. 使用与测试
 文件建议遵循以下结构：
 ```text
-plotfig/
-├── plotfig/
-│   ├── __init__.py
-│   ├── a.py
-│   ├── b.py
-│   └─── data/
-│       ├── A/
-│       ├── B/
-│       └── C/
+plotfig_project/
+├── src/
+│   └─── plotfig
+│        ├── __init__.py
+│        ├── a.py
+│        ├── b.py
+│        └─── data/
+│             ├── A/*
+│             ├── B/*
+│             └── C/*
 └── pyproject.toml
 ```
 
@@ -75,7 +76,11 @@ plotfig = [
 
 ```
 
-使用`uv build`打包。生成`dist/*.whl`文件，可直接`uv pip install *.whl`在本地安装
+可以使用`uv pip install -e .`进行编辑安装
+
+# 5. 打包与发布
+
+也使用`uv build`打包。生成`dist/*.whl`文件，可直接`uv pip install *.whl`在本地安装
 
 `uv tool install twine` 安装`twine`用于上传到Pypi
 
@@ -99,3 +104,5 @@ print(totp.now())  # 将打印出来的验证码复制回Pypi
 ```bash
 twine upload dist/*  # 如果有dist文件夹中有.gitignore文件，需要删除
 ```
+
+有没有人使用`uv pip -e install .`安装调试一个包，在vscode里面能够正常使用，但是没办法跳转到对应函数的位置啊

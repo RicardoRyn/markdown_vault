@@ -6,7 +6,7 @@
   "showViewHeader": false,
   "showRibbon": false,
   "cssTheme": "Maple",
-  "theme": "obsidian",
+  "theme": "system",
   "baseFontSize": 15,
   "baseFontSizeAction": true,
   "nativeMenus": false

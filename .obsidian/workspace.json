@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Python/uv.md",
-                "mode": "preview",
+                "file": "Neovim/快捷键.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "uv"
+              "title": "快捷键"
             }
           }
         ]
@@ -171,9 +171,13 @@
   },
   "active": "460eaa5b4f15318b",
   "lastOpenFiles": [
-    "Python/anaconda与conda.md",
-    "Python/uv.md",
+    "Neovim/LSP相关.md",
+    "Neovim/快捷键.md",
+    "Neovim/treessitter相关.canvas",
     "Ubuntu/vim的使用.md",
+    "未命名.md",
+    "Python/uv.md",
+    "Python/anaconda与conda.md",
     "Ubuntu/Linux的基本命令.md",
     "Git/2_Git相关.md",
     "Terminal_shell/NuShell相关/NuShell.md",
@@ -182,7 +186,6 @@
     "Terminal_shell/wezterm_nushell_hotkey.md",
     "SUMA/SUMA绘图.md",
     "Machine_learning/机器学习1.md",
-    "未命名.md",
     "未命名 1.md",
     "Markdown/MarkDown笔记.md",
     "Python/Matplotlib入门介绍.md",
@@ -195,11 +198,8 @@
     "R/R学习笔记.md",
     "Self_ spatiotemporal_neuroscience/关于自我的时空神经科学分析方法.md",
     "MCIP/MCIP相关.md",
-    "Neovim/LSP相关.md",
-    "Neovim/treessitter相关.canvas",
     "Neovim",
     "Git/1_Git相关.md",
-    "Workbench/Workbench实用命令.md",
     "4913",
     "新建 Text Document.txt",
     "新建文件夹",
