@@ -210,6 +210,41 @@ fslmaths 103818.L.ribbon.nii.gz \
   103818.L.ribbon.nii.gz  # 最后输出文件
 ```
 
+## 3. 处理Gifti文件中的数值
+假设我有一个真实髓鞘化文件`real.shape.gii`和预测髓鞘化文件`pred.shape.gii`。
+其中预测髓鞘化文件有很多的洞，需要补洞。
+基本思路为：
+1. 将`pred.shape.gii`文件`dilate`补洞。
+2. 例如`real.shape.gii`文件生成`mask.shape.gii`文件。
+3. 用`mask`文件乘以`dilate`文件
+
+```bash
+#!/bin/bash
+
+for hemi in lh rh; do
+  # dilate原数据
+  wb_command -metric-dilate \
+    ${hemi}_macaque_pred.shape.gii \
+    ${hemi}_macaque_10001_vertices.midthickness.surf.gii \
+    10 \
+    ${hemi}_macaque_pred_dilated.shape.gii
+
+  # 根据真实的髓鞘化文件，生成一个mask
+  wb_command -metric-math \
+    'x != 0' \
+    ${hemi}_macaque_mask.shape.gii \
+    -var x ${hemi}_macaque_real.shape.gii
+
+  # 仅保留mask中的值
+  wb_command -metric-math \
+    'x * y' \
+    ${hemi}_macaque_pred_dilated_masked.shape.gii \
+    -var x ${hemi}_macaque_pred_dilated.shape.gii \
+    -var y ${hemi}_macaque_mask.shape.gii
+done
+
+```
+
 # 二、涉及Cifti文件
 ## dlabel.nii --> scalar.nii
 ```bash
