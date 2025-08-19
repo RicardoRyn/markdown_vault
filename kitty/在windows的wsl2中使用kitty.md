@@ -9,7 +9,7 @@
 GLFW initialization failed
 ```
 
-就运行：
+就在bash shell（不要用nushell）中运行：
 
 ```bash
 ln -sf /mnt/wslg/runtime-dir/wayland-* $XDG_RUNTIME_DIR/
