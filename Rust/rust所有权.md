@@ -457,9 +457,7 @@ println!("{r3}");
 
 ```
 
-
 ## 悬垂引用（Dangling References）
-
 
 在具有指针的语言中，很容易通过释放内存时保留指向它的指针而错误地生成一个**悬垂指针（dangling pointer）**，指向可能已被分配给其他用途的内存位置的指针。
 
@@ -507,8 +505,208 @@ fn dangle() -> String {
 }
 ```
 
-## 总结
+## 对所有权的总结
 
 - 在同一时间内，要么有 一个可变引用（独占写），要么有 多个不可变引用（共享读）。
+- 当拥有某值的不可变引用时，就不能再获取一个可变引用。
 - 引用必须总是有效的。
 
+## Slice 类型
+
+**切片（slice）**允许你引用**集合中一段连续的元素序列**，而不用引用整个集合。
+slice 是一种**引用**，所以它不拥有所有权。
+
+> **集合**指的是 数组（array）、向量（`Vec<T>`）或者字符串（`String`/`&str`） m,
+> 这样的一段连续内存中的元素序列，但不是元组。
+>
+> 元组（tuple） 的数据布局不是“连续相同类型元素”，而是可以混合不同类型。
+> 它的内存布局更像是“打包在一起的几个独立值”，而**不是**一段可切片的连续数据。
+
+```rust
+fn main() {
+    let s = String::from("hello world");
+
+    let hello = &s[0..5];
+    let world = &s[6..11];
+
+    println!("{hello}, {world}");
+}
+```
+
+不同于整个 `String` 的引用，`hello` 是一个部分 `String` 的引用，由一个额外的 `[0..5]` 部分指定。
+可以使用一个由中括号中的 `[starting_index..ending_index]` 指定的 range 创建一个 slice。
+
+对于 Rust 的 `..` range 语法，如果想要从索引 0 开始，可以不写两个点号之前的值:
+
+```rust
+let s = String::from("hello");
+let len = s.len();
+
+let slice = &s[0..2];
+let slice = &s[..2]; // 等价于上一行
+
+let slice = &s[3..len];
+let slice = &s[3..]; // 等价于上一行
+
+let slice = &s[0..len];
+let slice = &s[..]; // 等价于上一行
+```
+
+**注意**：字符串 slice range 的索引必须位于有效的 UTF-8 字符边界内。
+如果尝试从一个多字节字符的中间位置创建字符串 slice，则程序将会因错误而退出，例如：
+
+```rust
+// 以下代码会报错
+let s1 = String::from("一二三四五六七");
+let r1 = &s1[0..2]; // 中文汉字一般是3个字节表示一个字符，相当于从`一`中截断
+println!("{r1}");
+```
+
+“字符串 slice” 的类型声明写作 `&str`。
+
+尝试编写一个函数，该函数接收一个用空格分隔单词的字符串，并返回在该字符串中找到的第一个单词。
+如果函数在该字符串中并未找到空格，则整个字符串就是一个单词，所以应该返回整个字符串。
+
+```rust
+fn main() {
+    let s = String::from("hello world");
+    let fw = first_word(&s);
+    println!("{fw}");
+}
+
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+
+    &s[..]
+}
+```
+
+字符串字面值其实就是 `slice`，例如：
+
+```rust
+let s = "Hello, world!";
+```
+
+> 这里 `s` 的类型是 `&str`：它是一个指向二进制程序特定位置的 `slice`。
+> 这也就是为什么字符串字面值是不可变的；`&str` 是一个不可变引用。
+
+通过将 s 参数的类型改为字符串 slice 来改进 first_word 函数;
+
+```rust
+fn first_word(s: &str) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+
+    &s[..]
+}
+```
+
+最终代码：
+
+```rust
+fn main() {
+    let my_string = String::from("hello world");
+
+    // `first_word` 适用于 `String`（的 slice），部分或全部
+    let word = first_word(&my_string[0..6]);
+    println!("{word}");
+    let word = first_word(&my_string[..]);
+    println!("{word}");
+
+    // `first_word` 也适用于 `String` 的引用，
+    // 这等价于整个 `String` 的 slice
+    let word = first_word(&my_string);
+    println!("{word}");
+
+
+    let my_string_literal = "hello world";
+
+    // `first_word` 适用于字符串字面值，部分或全部
+    let word = first_word(&my_string_literal[0..6]);
+    println!("{word}");
+    let word = first_word(&my_string_literal[..]);
+    println!("{word}");
+
+    // 因为字符串字面值已经 **是** 字符串 slice 了，
+    // 这也是适用的，无需 slice 语法！
+    let word = first_word(my_string_literal);
+    println!("{word}");
+}
+
+fn first_word(s: &str) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+
+    &s[..]
+}
+```
+
+## ASCI，Unicode，UTF-8
+
+``0000 0001` 有8 bits（比特/位），也就是1 byte（字节）。
+
+| 写法 | 单位     | 中文常用翻译 | 换算关系         |
+| ---- | -------- | ------------ | ---------------- |
+| 1 b  | bit      | 比特/位      | 最小单位，0 或 1 |
+| 1 B  | Byte     | 字节         | 1 B = 8 b        |
+| 1 Kb | kilobit  | 千比特       | 1 Kb = 1000 b    |
+| 1 KB | kilobyte | 千字节       | 1 KB = 1024 B    |
+| 1 Mb | megabit  | 兆比特       | 1 Mb = 1000 Kb   |
+| 1 MB | megabyte | 兆字节       | 1 MB = 1024 KB   |
+| 1 Gb | gigabit  | 吉比特       | 1 Gb = 1000 Mb   |
+| 1 GB | gigabyte | 吉字节       | 1 GB = 1024 MB   |
+
+### ASCII
+
+整数可以很方便的转换成二进制，但是字符呢？
+
+通过 **ASCII** 码进行转换。
+
+从 `00000000` 到 `01111111`，共有 **128** 个编码，而最开头的`0`/`1` 则表示正负号。
+
+例如字母 `h` 对应 ASCII 中的 `104`（从 `0` 到 `127`），然后把 `104` 转换成二进制，也就是 `01101000`。
+
+### Unicode
+
+但是ASCII码无法编码中文等其他语言的字符。
+所以发明了unicode编码。
+
+Unicode编码，覆盖了100多种语言，超10万个字符。
+
+Unicode编码，包括：
+
+- Unicode字符集
+- 编码规则：UTF-8，UTF-16，UTF-32
+
+类似于ASCII码。Unicode字符集为每一个字符都分配了一个唯一的编码。
+例如字母 `a` 是 `97`，汉字 `你` 是 `20320`。
+也称为**代码点**。
+
+对于 `0100111000100101` 这样一个二进制数据。
+可以看成 `01001110` 对应 `N` 以及 `00100101` 对应 `%`。
+也可以看成 `0100111000100101` 对应 `严`。
+
+这就是编码规则。
+
+ASCII 每个编码占 **1个字节**。
+
+UTF-8 是一种变化长度的编码。
+对于纯英文的字符，只会用**1个字节**表示，对于非英文的字符，会用**2~4个字节**来表示。
+
+> 不描述 UTF-16 和 UTF-32，它们会慢慢边缘化。
