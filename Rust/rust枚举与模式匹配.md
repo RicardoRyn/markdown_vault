@@ -131,6 +131,8 @@ fn main() {
 
 在这个例子中，`V4` 和 `V6` 变体存储的数据类型和数量不同，但它们都属于同一个枚举 `IpAddr`。
 
+再来一个例子：
+
 ```rust
 enum Message {
     Quit,
@@ -177,13 +179,6 @@ fn main() {
 
 这一部分将通过一个案例来分析 `Option`，它是标准库中定义的另一个枚举。
 `Option` 类型非常常用，因为它刻画了一个普遍的场景：一个值要么存在，要么不存在。
-
-举个例子，如果我们请求一个**非空列表**的第一项，就会得到一个值；
-但如果请求的是一个空列表，就不会得到任何结果。
-在类型系统中表达这种情况，意味着编译器会强制检查所有可能的情况，从而避免其他编程语言中常见的许多 bug。
-
-编程语言的设计不仅要考虑 **提供哪些功能**，也要思考 **排除哪些功能**。
-Rust 就**没有**引入很多语言中常见的“空值”概念。
 
 ```rust
 enum Option<T> {
@@ -384,7 +379,7 @@ fn main() {
 
 通过这种方式，我们就能把枚举 `Coin` 的 `Quarter` 变体里保存的州信息提取出来并使用。
 
-## 匹配`Option<T>`
+## 匹配 `Option<T>`
 
 在前面的部分，我们使用 `Option<T>` 时，是为了从 `Some` 变体中取出内部的值 `T`。
 其实，我们也可以像处理 `Coin` 枚举那样，用 `match` 来处理 `Option<T>`！
@@ -412,7 +407,7 @@ fn main() {
 }
 ```
 
-### 通配符和`_`占位符
+### 通配符和 `_` 占位符
 
 `match` 不仅可以匹配枚举的不同变体，也可以匹配具体的值或模式。
 甚至只针对少数几个特定值做特殊操作，而对其他所有情况执行默认操作：
@@ -472,3 +467,139 @@ fn main() {
     fn remove_fancy_hat() {}
 }
 ```
+
+## `if let` 和 `let else` 简介控制流
+
+`if let` 语法让我们以一种不那么冗长的方式结合 `if` 和 `let`，来处理只匹配一个模式的值而忽略其他模式的情况：
+
+```rust
+fn main() {
+    let config_max = Some(3u8);
+    match config_max {
+        Some(max) => println!("The maximum is configured to be {max}"),
+        _ => (),
+    }
+}
+```
+
+如果值是 `Some`，我们希望打印出 `Some` 变体中的值，这个值被绑定到模式中的 max 变量里。
+对于 `None` 值我们不希望做任何操作。
+
+为了满足 `match` 表达式（穷尽性）的要求，必须在处理完这唯一的变体后加上 `_ => ()`。
+
+现在可以使用 `if let` 这种简洁的方式编写：
+
+```rust
+fn main() {
+    let config_max = Some(3u8);
+    if let Some(max) = config_max {
+        println!("The maximum is configured to be {max}");
+    }
+}
+```
+
+`if let` 语法获取通过等号分隔的**一个模式**和**一个表达式**。
+在这里，模式是 `Some(max)`，`max` 绑定为 `Some` 中的**值**。
+接着可以在 `if let` 代码块中使用 `max` 了，就跟在对应的 `match` 分支中一样。
+只有当值匹配该模式时，`if let` 块中的代码才会执行。
+
+> `if let` 会失去 `match` 强制要求的穷尽性检查来确保你没有忘记处理某些情况
+> 可以认为 `if let` 是 `match` 的一个语法糖，它当值匹配某一模式时执行代码而忽略所有其他值。
+
+可以在 `if let` 中包含一个 `else`：
+
+```rust
+#[derive(Debug)]
+enum UsState {
+    Alabama,
+    Alaska,
+    // --snip--
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn main() {
+    let coin = Coin::Penny;
+    let mut count = 0;
+    match coin {
+        Coin::Quarter(state) => println!("State quarter from {state:?}!"),
+        _ => count += 1,
+    }
+}
+```
+
+```rust
+#[derive(Debug)]
+enum UsState {
+    Alabama,
+    Alaska,
+    // --snip--
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn main() {
+    let coin = Coin::Penny;
+    let mut count = 0;
+
+}
+```
+
+在实际编程中，一个常见的场景是：如果某个值存在，就对它做一些操作；如果不存在，就返回一个默认值。
+
+还是继续用处理 `UsState` 的硬币作为例子。
+假设我们要写点有趣的逻辑，它依赖于硬币所代表的州成立了多久。
+我们就可以在 `UsState` 上定义一个方法，用来检查州的“年龄”：
+
+```rust
+#[derive(Debug)] // so we can inspect the state in a minute
+enum UsState {
+    Alabama,
+    Alaska,
+}
+
+impl UsState {
+    fn existed_in(&self, year: u16) -> bool {
+        match self {
+            UsState::Alabama => year >= 1819,
+            UsState::Alaska => year >= 1959,
+        }
+    }
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn describe_state_quarter(coin: Coin) -> Option<String> {
+    if let Coin::Quarter(state) = coin {
+        if state.existed_in(1900) {
+            Some(format!("{state:?} is pretty old, for America!"))
+        } else {
+            Some(format!("{state:?} is relatively new."))
+        }
+    } else {
+        None
+    }
+}
+
+fn main() {
+    if let Some(desc) = describe_state_quarter(Coin::Quarter(UsState::Alaska)) {
+        println!("{desc}");
+    }
+}
+```
+
