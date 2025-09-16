@@ -603,3 +603,81 @@ fn main() {
 }
 ```
 
+Rust 还提供了 `let...else`。`let...else` 语法左侧是一个模式，右侧是一个表达式，非常类似于 `if let`，不过它没有 `if` 分支，只有 `else` 分支。
+
+如果模式不匹配，程序流会指向 `else` 分支，它必须从函数返回。
+如果模式匹配，它会将匹配到的值绑定到外层作用域。
+
+```rust
+#[derive(Debug)] // so we can inspect the state in a minute
+enum UsState {
+    Alabama,
+    Alaska,
+    // --snip--
+}
+
+impl UsState {
+    fn existed_in(&self, year: u16) -> bool {
+        match self {
+            UsState::Alabama => year >= 1819,
+            UsState::Alaska => year >= 1959,
+            // -- snip --
+        }
+    }
+}
+
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn describe_state_quarter(coin: Coin) -> Option<String> {
+    let Coin::Quarter(state) = coin else {
+        return None;
+    };
+
+    if state.existed_in(1900) {
+        Some(format!("{state:?} is pretty old, for America!"))
+    } else {
+        Some(format!("{state:?} is relatively new."))
+    }
+}
+
+fn main() {
+    if let Some(desc) = describe_state_quarter(Coin::Quarter(UsState::Alaska)) {
+        println!("{desc}");
+    }
+}
+```
+
+### 另一个例子
+
+假设我们有个 `Option<i32>`，想取出里面的值，如果没有值就直接退出函数：
+
+```rust
+fn demo(x: Option<i32>) {
+    match x {
+        Some(v) => println!("Got {v}"),
+        None => return,
+    }
+}
+
+
+fn demo(x: Option<i32>) {
+    if let Some(v) = x {
+        println!("Got {v}");
+    } else {
+        return;
+    }
+}
+
+fn demo(x: Option<i32>) {
+    let Some(v) = x else {
+        return; // 解构失败就走这里
+    };
+    println!("Got {v}"); // 解构成功就能直接用 v
+}
+
+```
