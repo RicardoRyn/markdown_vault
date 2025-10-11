@@ -601,7 +601,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 ```bash
 exit
-unmount -R /mnt
+umount -R /mnt
 reboot
 ```
 
