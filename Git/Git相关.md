@@ -14,11 +14,11 @@
 # 常规设置
 
 ```bash
-git config --global user.name "Ricardo_MI"  # 如果用户名中没有空格，可以不使用双引号
+git config --global user.name "Ricardo_MI" # 如果用户名中没有空格，可以不使用双引号
 git config --global user.email "ricardoryn1317@gmail.com"
 
-git config --global init.defaultBranch main  # 设置默认分支名字为main
-git config --global credential.helper store  # 为了防止git push的时候老师需要用户名和密码，可以加上这个设置
+git config --global init.defaultBranch main # 设置默认分支名字为main
+git config --global credential.helper store # 为了防止git push的时候老师需要用户名和密码，可以加上这个设置
 
 # 可选
 # git config --global http.sslverify false  # 防止git clone出现server certificate verification failed. CAfile: none CRLfile: none的问题
@@ -34,12 +34,12 @@ cd  # 等同于cd ~
 # 由于之前配置vscode的远程连接，所以已经有了名为.ssh的文件夹
 ssh-keygen -t rsa -C ricardoryn1317@gmail.com
 # 敲完回车，终端会显示：
-Generating public/private rsa key pair. 
+Generating public/private rsa key pair.
 Enter file in which to save the key (/c/Users/Layne/.ssh/id_rsa):
 # 自己指定文件保存地点：
 /c/Users/RicardoRyn/.ssh/git_ssh_key
 # 后面回车，终端问你需不需要输入密码，不需要就继续回车，最后终端显示：
-Your identification has been saved in /c/Users/RicardoRyn/.ssh/git_ssh_key 
+Your identification has been saved in /c/Users/RicardoRyn/.ssh/git_ssh_key
 Your public key has been saved in /c/Users/RicardoRyn/.ssh/git_ssh_key.pub.
 # 完成
 ```
@@ -49,8 +49,8 @@ Your public key has been saved in /c/Users/RicardoRyn/.ssh/git_ssh_key.pub.
 ## 更多关于ssh (可以免密登录服务器)
 
 ```bash
-ssh-keygen -t rsa -b 4096 -C ricardoryn1317@gmail.com  # -t表示对应的加密算法，-b表示生成密钥的长度为4096，-C则是为添加的公钥增加注释
-ssh-copy-id aaa@xxx.xxx.xxx.xxx  # 将本地的ssh公钥复制到远程机器的`~/.ssh/authorized_keys`文件中，这样就可以通过ssh密钥认证的方式，免去输入密码
+ssh-keygen -t rsa -b 4096 -C ricardoryn1317@gmail.com # -t表示对应的加密算法，-b表示生成密钥的长度为4096，-C则是为添加的公钥增加注释
+ssh-copy-id aaa@xxx.xxx.xxx.xxx                       # 将本地的ssh公钥复制到远程机器的`~/.ssh/authorized_keys`文件中，这样就可以通过ssh密钥认证的方式，免去输入密码
 ```
 
 # 常用命令
@@ -78,18 +78,18 @@ git switch -c <branch name>  # 新版本中，创建并切换到新的 A branch
 ```
 
 # 同步
+
 ## 本地推送到远端
 
 ```bash
-git remote add origin https://github.com/RicardoRyn/Plot_figu；jkkkre.git
-git remote -v 
+git remote add origin https://github.com/RicardoRyn/Plot_fig.git
+git remote -vk
 
 git push  # 输入用户名，token
 git push -u origin main
 git push --tags  # 将所有tag push上去
 
 ## 远端拉取到本地
-```bash
 # 假设远程仓库已经被修改，与本地不同
 git fetch  # 本地文件暂时不会发生变化，只是拉到了本地仓库（不是工作区）
 git diff origin/main
@@ -115,9 +115,9 @@ git pull
 
 ```bash
 # 重置当前分支到远程分支
-git checkout main  # 切换到主分支
-git reset --hard origin/main  # 重置本地分支到远程分支
-git clean -fd  # 删除所有未跟踪的文件和目录
+git checkout main            # 切换到主分支
+git reset --hard origin/main # 重置本地分支到远程分支
+git clean -fd                # 删除所有未跟踪的文件和目录
 ```
 
 # 使用bare仓库管理各个文件夹中的配置文件 (已弃用)
@@ -128,7 +128,7 @@ git init --bare ~/.rjx_dotfiles
 
 # 自定义命令“rjxgit”
 # 注意当前系统以及shell，比如windows的nushell中写成“$env.USERPROFILE”
-echo "alias rjxgit='git --git-dir=$HOME/.rjx_dotfiles/ --work-tree=$HOME'" >> $HOME/.bashrc
+echo "alias rjxgit='git --git-dir=$HOME/.rjx_dotfiles/ --work-tree=$HOME'" >>$HOME/.bashrc
 ```
 
 在`~`中新建`.gitignore`文件，然后添加：
