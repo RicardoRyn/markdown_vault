@@ -52,6 +52,12 @@ Your public key has been saved in /c/Users/RicardoRyn/.ssh/git_ssh_key.pub.
 ssh-keygen -t rsa -b 4096 -C ricardoryn1317@gmail.com # -t表示对应的加密算法，-b表示生成密钥的长度为4096，-C则是为添加的公钥增加注释
 ssh-copy-id aaa@xxx.xxx.xxx.xxx                       # 将本地的ssh公钥复制到远程机器的`~/.ssh/authorized_keys`文件中，这样就可以通过ssh密钥认证的方式，免去输入密码
 ```
+```bash
+ssh -T git@github.com  # 测试ssh连接是否成功
+
+# 要求用git@github.com形式，可以用如下形式转换
+git remote set-url origin git@github.com:RicardoRyn/Plot_fig.git
+```
 
 # 常用命令
 
