@@ -376,7 +376,7 @@ fstab 用来定义磁盘分区。它是 Linux 系统中重要的文件之一。
 使用 `genfstab` 自动根据当前挂载情况生成并写入 fstab 文件：
 
 ```bash
-genfstab -U /mnt > /mnt/etc/fstab
+genfstab -U /mnt >/mnt/etc/fstab
 ```
 
 复查一下 /mnt/etc/fstab 确保没有错误：
@@ -606,7 +606,6 @@ reboot
 ```
 
 狂按F2更改启动顺序
-
 
 ## 11. 完成安装
 
