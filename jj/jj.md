@@ -1,4 +1,6 @@
-# 本地操作
+# jj
+
+## 本地操作
 
 `jj git init`， 初始化代码库
 
@@ -53,7 +55,7 @@
 
 `jj restore -f <commit ID> -t <change ID> --restore-descendants`，将指定change恢复到其某个曾经的commit，然后把剩下的commit存进下一个change中
 
-# 远端操作
+## 远端操作
 
 `jj git init --colocate`，在一个已经有git仓库的文件夹中插入jj仓库，同时使用git和jj
 
@@ -70,7 +72,7 @@
 `jj git push -c @`，将当前change push到github并创建名为`push-<change ID>`的分支
 `jj git push -b <branch name>`，能够推送指定分支
 
-# 一些修订集表达式
+## 一些修订集表达式
 
 `heads()`
 `all()`
@@ -79,10 +81,10 @@
 `bookmarks()`
 `connected()`
 
-
-# 解决冲突
+## 解决冲突
 
 当我们知道某个commit有冲突的时候。最好的做法就是在新建其子change。
+
 ```bash
 $ jj log
 @  qzvqqupx martinvonz@google.com 2023-02-12 15:08:33 1978b534 conflict
@@ -99,4 +101,6 @@ $ jj log
 │  (empty) Merge pull request #6 from Spaceghost/patch-1
 ~
 ```
+
 例如上面最好的做法就该是`jj new puqltutt`。只要我们在这个子change中解决了冲突，就可以把整个commit squash到`puqltutt`中。
+
