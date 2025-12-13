@@ -4,11 +4,11 @@
 
 ![5大区](./assets/ccef1b1009501335af7db8e0656ec44e.jpg)
 
-- 工作区 (workspace) 中的文件一般是未追踪状态，即`Untracked/Unstage`
-- 暂存区 (index) 中的文件一般是，已经追踪状态`Stage`
-- 本地仓库 (local repository)
-- 远端仓库 (remote repository)
-- 贮藏区 (stash)，可将工作区域中的变更，贮藏起来，必要时候再取出来用。
+- **工作区/工作目录/实际于硬盘上的文件/workspace/working directory** 中的文件一般是未追踪状态，即`Untracked/Unstage`
+- **暂存区/索引区/stage/index** 中的文件一般是，已经追踪状态`Stage`
+- **本地仓库/local repository**
+- **远端仓库/remote repository**
+- **贮藏区/stash** 可将工作区域中的变更，贮藏起来，必要时候再取出来用。
 
 ## 常规设置
 
@@ -192,9 +192,93 @@ git push origin --delete v1.0.0 # 删除远程tag
 ```
 
 ## 工作流
+视频1：[十分钟学会正确的github工作流，和开源作者们使用同一套流程-哔哩哔哩](https://b22.tv/vR4P09H)
+视频2：[看完这个，你终于能理解 Git 了 | LearnThatStack](https://www.bilibili.com/video/BV1va2ZBzEhx/?vd_source=01c6c9737025720657c5880642dc4282)
 
-参考视频：[十分钟学会正确的github工作流，和开源作者们使用同一套流程-哔哩哔哩](https://b22.tv/vR4P09H)
 
-`main`, `relsease`, `dev`, `feature`, `hotfix` 5大分支
+# 理解`checkout`, `reset`, `revert`
 
-![工作流](./assets/956fcdc1c739c1c33f3d964795d2063d.jpg)
+**git**是一个数据库，其基本单位是**commit**。
+
+**commit**只是一个**快照**，是项目在某一时刻的完整照片。
+不是你做的更改，而是**每个文件的完整状态**。
+
+## 基本概念
+
+### commit
+
+每个**commit**包括3样东西:
+
+1. 指向那个完整快照的指针
+2. 元数据，谁创建的，创建时间，提交信息等
+3. 指向父commit的指针
+
+> DAG：directed asylic graph，有向无环图，一种图论结构。
+
+### branch
+
+**branch**不是代码库的完整独立副本。
+相反，**branch**只是一个指针，一个便利贴，一个包含一条小信息的小文本文件（即某个提交的哈希值）。
+
+当你创建一个新的分支时，git只会生成一个小文件，用来说明这个**branch**指向哪个commit，仅此而已。
+
+所以说**branch**只是贴在不同**commit**上的标签。
+而**commit**本身不知道存在哪些**branch**，而**branch**也不包含**commit**。
+
+当你在**branch**创建新的**commit**时，git会自动把便利贴移动到新的**commit**上，这就是**branch**的整个概念。
+
+### HEAD
+
+git通过**HEAD**理解你在哪里，在做什么。
+**HEAD**是git跟踪你位置的方式。
+**HEAD**是另一个指针，但**通常**不直接指向提交，而是指向一个**branch**。
+
+当你在main branch上时，**HEAD**指向main **branch**，而main指向一个**commit**。
+
+## checkout
+
+当运行`git checkout feature`，git实际上是把**HEAD**指向feature **branch**上（而不是一个**commit**上）。
+
+但是如果你`git checkout <commit-id>`，git实际上是把**HEAD**指向那个具体的**commit**，并显示**detached HEAD**状态。
+在这个状态下，你仍然可以**commit**，只是没有**branch**跟随。
+当你切换走了之后，这些**commits**就会变成**orphan commits**，最终会被垃圾回收机制回收。
+
+总结，`git checkout <commit-id>`执行后，只是**HEAD**指向某个具体的**commit**，工作目录会更新，以匹配该**commit**的快照。
+但是，**commit**本身没有改变，**branch**也没有移动，历史记录也保持不变。
+只是能够四处查看，做一些实验性质的更改，并在下一次checkout之后，丢失创建的**commit**。
+
+## reset
+
+当你在main **branch**上，并运行`git reset a1b2c3`，其实是在说，把main **branch**指向这个**commit**。
+这个时候，a1b2c3和main之间的所有**commits**都变成了**orphan commits**，所以针对这些**commits**，`reset`存在3种模式。
+
+### --soft
+
+1. **工作区**原有内容不变。
+2. **暂存区**原有内容不变。
+3. **orphan commits**的内容移动到**暂存区**，等待再次commit。
+
+总结：安全！所有内容依旧存在，只是除了原本**工作区**的内容，都移动到**暂存区**。
+
+### --mixed
+
+这是`reset`的默认模式。
+
+1. **工作区**原有内容不变。
+1. **暂存区**原有内容移动到**工作区**。
+2. **orphan commits**的内容移动到工作区。
+
+总结：安全！所有内容依旧存在，只是全部移动到**工作区**。
+
+### --hard
+
+
+1. 工作区重置（无法找回）。
+2. 暂存区重置（无法找回）。
+3. **orphan commits**的内容丢失（可以找回）。
+
+总结：危险！除了**orphan commits**的内容，都丢失，无法找回。
+
+## revert
+
+用新的commit来抵消旧的commit的，从而达到回滚的效果。
