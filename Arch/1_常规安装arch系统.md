@@ -229,6 +229,7 @@ cfdisk /dev/nvmexn1
 
 进入 cfdisk 分区界面（如果已经进入了，无需再次进入）
 
+# math package
 ```bash
 cfdisk /dev/nvmexn1
 ```
@@ -633,4 +634,5 @@ systemctl enable --now NetworkManager # 设置开机自启并立即启动 Networ
 
 ```bash
 pacman -S fastfetch
+pacman -S yadm
 ```
