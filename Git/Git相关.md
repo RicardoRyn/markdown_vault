@@ -72,7 +72,7 @@ ssh-copy-id aaa@xxx.xxx.xxx.xxx                       # 将本地的ssh公钥复
 要求用git@github.com形式，可以用如下形式转换
 
 ```bash
-git remote set-url origin git@github.com:RicardoRyn/Plot_fig.git
+git remote set-url origin git@github.com:RicardoRyn/nvim.git
 ```
 
 ---
