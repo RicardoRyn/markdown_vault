@@ -7,7 +7,7 @@ uv add ipykernel --dev
 
 uv run python -m ipykernel install --user --name=aaa --display-name "Python (AAA)"
 
-uv run jupyter kernelspec list
+jupyter kernelspec list
 ```
 
 > uv run: 这告诉 uv 使用当前项目 .venv 环境中的 Python 解释器及其依赖包（即你刚刚安装的 ipykernel）。
