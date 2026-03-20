@@ -1,5 +1,7 @@
 # 第一个video
+
 首先对被试进行recon-all
+
 ```bash
 recon-all -i t1.nii.gz -subjid sub-01 -all
 ```
@@ -12,6 +14,7 @@ recon-all -i t1.nii.gz -subjid sub-01 -all
 就可以在3D图上看到个体分区
 
 # 第二个video
+
 用freesurfer生成的文件
 这里要用的命令是`@SUMA_Make_Spec_FS`
 键入：
@@ -32,6 +35,7 @@ cd进这个文件夹下
 这个spec文件可以自己生成，但是SUMA在这里准备了个体空间的左右脑以及both的
 
 用SUMA打开spec文件，键入：
+
 ```bash
 suma -spec sub-01_both.spec
 ```
@@ -51,6 +55,7 @@ suma -spec std.141.sub-01_both.spec
 映射到标准空间是为了组水平的分析
 
 # 第三个video
+
 在surface上做功能像的预处理
 与之前afni做预处理没太大差别，只是block中多了surf一步
 
@@ -66,9 +71,11 @@ suma -spec std.141.sub-01_both.spec
 `*+tlrc*`说明afni认为它是在标准空间的，这个信息是写在头文件(.HEAD)里面的。有时候在网上下载数据，明明不是在标准空间，但afni依然记录成+tlrc，可以通过`3drefit`命令来修改
 
 # 第四个video
+
 组分析
 
 # 第五个video
+
 把surface结果呈现到volume上来
 用的是`3dSurf2Vol`命令
 需要一个`spec`文件和一个`sv`文件(Surf_Vol)
@@ -81,7 +88,7 @@ suma -spec std.141.sub-01_both.spec
 在afni官网上能够下载对应标准空间的文件
 例如：`suma_MNI152_2009.tgz`
 就是在MNI152上运行`suma`，然后生成了对应的`spec`文件和`volume`文件
-`3dSurf2Vol` 
+`3dSurf2Vol`
 ...
 在做surface到volume的转换的时候，头文件的信息丢掉了
 可以用`3drefit`来把这些sub-brick的名字重新规定一下。但是一个一个改很麻烦，可以把之前头文件的信息拷贝过来
@@ -91,3 +98,4 @@ suma -spec std.141.sub-01_both.spec
 ```
 
 这一步并不改变体素结果，只是改变头文件信息的结果
+

@@ -1,6 +1,6 @@
 在网址https://afni.nimh.nih.gov/pub/dist/tgz/中下载适合自己的空间文件，这里选择`suma_MNI152_2009.tgz`
 
-将下载好的文件解压缩，并找到`MNI152_2009_SurfVol.nii`	，将其作为underlay，将进行统计检验的结果（即做完预处理和GLM的）作为Overlay，用afni打开，键入：
+将下载好的文件解压缩，并找到`MNI152_2009_SurfVol.nii` ，将其作为underlay，将进行统计检验的结果（即做完预处理和GLM的）作为Overlay，用afni打开，键入：
 
 ```bash
 afni MNI152_2009_SurfVol.nii stats.FT+tlrc.
@@ -8,9 +8,9 @@ afni MNI152_2009_SurfVol.nii stats.FT+tlrc.
 
 得到激活图，现在将该图映射到大脑皮层表面空间，键入：
 
-~~~bash
-suma -spec suma_MNI152_2009/std.141.MNI152_2009_both.spec -sv MNI152_2009_SurfVol.nii &  # std.141.MNI152_2009_both.spec是suma_MNI152_2009文件夹里关于大脑两个半球（both）的文件；&表示让程序在后台运行，不影响前台继续工作
-~~~
+```bash
+suma -spec suma_MNI152_2009/std.141.MNI152_2009_both.spec -sv MNI152_2009_SurfVol.nii & # std.141.MNI152_2009_both.spec是suma_MNI152_2009文件夹里关于大脑两个半球（both）的文件；&表示让程序在后台运行，不影响前台继续工作
+```
 
 出现SUMA图形界面，终端中显示`SUMA_Engine: Starting to listen ...`
 
@@ -39,3 +39,4 @@ m键：按下m键再拖动鼠标，自动向鼠标移动方向旋转
 ctrl+r：储存当前截图（自动在当前文件夹下新建SUMA_Recordings文件夹来储存截图），截图质量和SUMA界面的大小有关
 
 R：录制视频，每次移动都会记录一帧，可以更改视频输出格式，以及保存想要的帧数
+
