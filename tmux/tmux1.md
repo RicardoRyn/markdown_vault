@@ -19,6 +19,8 @@
 `prefix + ?`: 查，都可以查
 
 `prefix + :`: 输入tmux命令（省去tmux不写）
+`prefix + : new -s <session_name>`: 一般新建session都是重型操作，没有快捷键，直接输入命令行
+
 `prefix + <S-I>`: 安装插件
 
 `prefix + c`: 新建窗口
