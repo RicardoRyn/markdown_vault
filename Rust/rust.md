@@ -444,30 +444,50 @@ fn main() {
 
 ### if let和let else简洁控制流
 
-`if let`/`if let ... else`：所有**只有两个分支**的`match`都可以改写成`if let ... else`形式。
+所有**只有两个分支**的`match`都可以改写成`if let ... else`形式。
 
 ```rust
 fn main() {
-    // 只在config_max有值的时候，执行打印语句
-    let config_max = Some(3u8);
-    match config_max {
+    let maybe_value = Some(3u8);
+    match maybe_value {
         Some(a) => println!("The maximum is configured to be {a}"),
         _ => (),
-    }
-
-    // 等价于
-    let config_max = Some(3u8);
-    if let Some(a) = config_max {
-        println!("The maximum is configured to be {a}");
     }
 
     // if let 模式1(变量) = 表达式 {
     //     表达式1
     // }
 
-    let config_max: Option<u8> = None;
-    let a = if let Some(_) = config_max { 1 } else { 0 };
+    // if let
+    if let Some(a) = maybe_value {
+        println!("The maximum is configured to be {a}");
+    }
+
+    // let ... if let ... esle
+    let a = if let Some(_) = maybe_value {
+        true
+    } else {
+        false
+    };
+
     println!("{a}");
+}
+```
+
+`let else`的`else`分支必须**发散**（即不返回到该分支之后的代码）， 也就是解构写法：
+
+```rust
+fn myfunction() -> i32 {
+    let maybe_value = Some(42);
+
+    let Some(a) = maybe_value else { return 0 };
+
+    a
+}
+
+fn main() {
+    let b = myfunction();
+    println!("b: {b}");
 }
 ```
 
@@ -488,6 +508,18 @@ cargo new <包名 >--lib # 创建一个库crate
 ```
 
 ### 定义模块来控制作用域与私有性
+
+Rust 模块只能包含项（items），例如：
+
+- `enum`
+- `fn`
+- `const`
+- `static`
+- `trait`
+- `impl`
+- `mod` 等。
+
+`let` 语句属于**表达式/语句**，只能出现在函数体或其他代码块中。
 
 1. 在不使用`pub mod`的情况下，父级模块**可以访问**子级模块的所有公开项。而子模块可以访问父模块的任何私有项。
 2. 在不使用`pub mod`的情况下，祖父模块**不可访问**孙子模块的公开项。且孙子模块无法访问祖父模块的公开项。
@@ -622,3 +654,200 @@ fn main() {
     let a = v[0]; // 错误
 }
 ```
+
+### 使用字符串储存 UTF-8 编码的文本
+
+`push_str`方法采用字符串slice，它并不会获取对象的所有权
+
+```rust
+fn main() {
+    let mut s1 = String::from("foo");
+    let s2 = "bar";
+    s1.push_str(s2);
+    println!("s2 is {s2}"); // ✅ 可以
+}
+```
+
+`push_str`：追加一个字符串切片（`&str`）。例如`s.push_str("world");`。
+`push`：追加一个字符（`char`）。例如`s.push('!');`。
+
+使用`+`拼接字符串：
+
+```rust
+fn main() {
+    let s1 = String::from("Hello, ");
+    let s2 = String::from("world!");
+    let s3 = s1 + &s2; // 注意 s1 被移动了，不能继续使用
+}
+```
+
+使用`format!`宏来拼接字符串：
+`format!("...")`宏 → `String`，它总是返回一个新分配的`String`。
+
+```rust
+fn main() {
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
+
+    let s = format!("{s1}-{s2}-{s3}");
+
+    println!("{s1}");
+    println!("{s2}");
+    println!("{s3}");
+    println!("{s}");
+}
+```
+
+Rust 的字符串不支持索引。
+原理类似**数组**和**Vec**的部分所有权一样。
+不支持移动单个元素。
+
+```rust
+fn main() {
+    let s1 = String::from("hi");
+    let h = s1[0]; // ❌ 错误
+}
+```
+
+Rust 的字符串`str`**不支持**通过索引`s[0]` 直接访问字符。
+原因在于字符串是 UTF-8 编码的。
+
+- 索引操作会按字节索引，而一个字符可能占用多个字节，直接按字节索引可能无法得到一个合法的字符（甚至切在字符中间）。
+- 而`&s[0..3]`是字节切片（范围语法基于字节位置），它返回一个`&str`。
+
+```rust
+fn main() {
+    // 索引索的是字节
+    let s = "你好"; // 2个字符，6个字节
+
+    let a = &s[0]; // ❌ 错误
+    println!("{}", a);
+
+    let b = &s[0..3]; // ✅ 正确
+    println!("{}", b); // 你
+
+    // 使用字符
+    for c in s.char() {
+        println!("{c}"); // 你 好
+    }
+}
+```
+
+小练习：
+
+```rust
+fn string_slice(arg: &str) {
+    println!("{arg}");
+}
+
+fn string(arg: String) {
+    println!("{arg}");
+}
+
+fn main() {
+    // 字符串字面量
+    string_slice("blue");
+
+    // 字符串切片操作，因为它们只是原字符串的一部分的引用，不拥有数据。
+    string_slice(&String::from("abc")[0..1]);
+    string_slice("  hello there ".trim());
+
+    // 这些方法都会在堆上分配新内存并拥有数据。
+    string(format!("Interpolation {}", "Station"));
+    string(String::from("hi"));
+    string("red".to_string());
+    string("rust is fun!".to_owned());
+    string("nice weather".into());
+    string("Happy Monday!".replace("Mon", "Tues"));
+    string("mY sHiFt KeY iS sTiCkY".to_lowercase());
+}
+```
+
+### 使用 Hash Map 储存键值对
+
+哈希map是同质的：所有的键必须是相同类型，值也必须都是相同类型。
+遍历哈希 map 会以任意顺序进行。
+
+1. 直接覆盖原始值：
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Blue"), 25);
+
+    println!("{scores:?}"); // {"Blue": 25}
+}
+```
+
+2. 如果没有指定key，才插入值，有则不做任何处理：
+   `Entry`上的`or_insert`方法被定义为：
+   - 如果对应`Entry`的键已经存在，就返回该值的**可变引用**；
+   - 如果不存在，就把参数作为这个键的新值插入，并返回这个新值的**可变引用**。
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+
+    let blue_value = scores.entry(String::from("Blue")).or_insert(25);
+    println!("{blue_value}"); // 10
+
+    let yellow_value = scores.entry(String::from("Yellow")).or_insert(25);
+    println!("{yellow_value}"); // 25
+
+    println!("{scores:?}"); // {"Yellow": 25, "Blue": 10}
+}
+```
+
+> 注意`println!`的位置，因为不能同时存在多个可变引用。
+
+3. 根据新值更新旧值：
+
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let text = "hello world wonderful world";
+
+    let mut map = HashMap::new();
+
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1
+    }
+
+    println!("{map:?}"); // {"world": 2, "wonderful": 1, "hello": 1}
+}
+```
+
+> 为啥这里是`let count`而不是`let mut count`呢？
+> 因为修改变量`count`本身（即改变它指向的地址）和通过`count`修改它指向的值是两件不同的事。
+>
+> 等号右边是`&mut i32`，即可变引用，可变引用允许通过**解引用**来修改其指向的值。
+>
+> 等号左边是`let count`，即**不可变绑定**，意思是`count`这个变量名不能重新赋值给另一个不同的引用（即不能再写`count = &mut something`）。
+> 而`let mut count`是创建一个**可变绑定**， 可以重新赋值`count = &mut other_value`。
+>
+> 在循环中，我们只是使用`*count += 1`来修改**引用指向的值**，从未尝试让`count`指向别的引用。
+> 因此，`count`不需要是可变的绑定。用`let count = ...`完全足够。
+>
+> ```rust
+> fn main() {
+>     let mut a = vec![1]; // a必须为一个可变绑定
+>     let b = &mut a[0]; // b不需要是可变的绑定
+>     *b += 1;
+>     println!("{b}"); // 2
+>     println!("{a:?}"); // [2]
+> }
+> ```
+>
+> 综上所述，`let mut a`，意识就是说这个`a`所表示的，栈上的，指针，是可以被修改的。
+> 而`let b`，则说明这个`b`所表示的，栈上的指针，不能被修改。
