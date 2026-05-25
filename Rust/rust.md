@@ -851,3 +851,155 @@ fn main() {
 >
 > 综上所述，`let mut a`，意识就是说这个`a`所表示的，栈上的，指针，是可以被修改的。
 > 而`let b`，则说明这个`b`所表示的，栈上的指针，不能被修改。
+
+## 8.5 测试
+
+```rust
+
+// This is a quiz for the following sections:
+// - Strings
+// - Vecs
+// - Move semantics
+// - Modules
+// - Enums
+//
+// Let's build a little machine in the form of a function. As input, we're going
+// to give a list of strings and commands. These commands determine what action
+// is going to be applied to the string. It can either be:
+// - Uppercase the string
+// - Trim the string
+// - Append "bar" to the string a specified amount of times
+//
+// The exact form of this will be:
+// - The input is going to be a Vector of 2-length tuples,
+//   the first element is the string, the second one is the command.
+// - The output element is going to be a vector of strings.
+
+enum Command {
+    Uppercase,
+    Trim,
+    Append(usize),
+}
+
+mod my_module {
+    use super::Command;
+
+    // TODO: Complete the function as described above.
+    pub fn transformer(input: Vec<(String, Command)>) -> Vec<String> {
+        let mut output = Vec::new();
+
+        for (old_string, command) in input.into_iter() {
+            let new_string = match command {
+                Command::Uppercase => old_string.to_uppercase(),
+                Command::Trim => old_string.trim().to_string(),
+                Command::Append(count) => format!("{}{}", old_string, "bar".repeat(count)),
+            };
+
+            output.push(new_string);
+        }
+
+        output
+    }
+}
+
+fn main() {
+    // You can optionally experiment here.
+}
+
+#[cfg(test)]
+mod tests {
+    // TODO: What do we need to import to have `transformer` in scope?
+    use super::my_module::transformer;
+    use super::Command;
+
+    #[test]
+    fn it_works() {
+        let input = vec![
+            ("hello".to_string(), Command::Uppercase),
+            (" all roads lead to rome! ".to_string(), Command::Trim),
+            ("foo".to_string(), Command::Append(1)),
+            ("bar".to_string(), Command::Append(5)),
+        ];
+        let output = transformer(input);
+
+        assert_eq!(
+            output,
+            [
+                "HELLO",
+                "all roads lead to rome!",
+                "foobar",
+                "barbarbarbarbarbar",
+            ]
+        );
+    }
+}
+```
+
+这个测验，第一步就是设计函数签名。根据：
+
+```rust
+        let input = vec![
+            ("hello".to_string(), Command::Uppercase),
+            (" all roads lead to rome! ".to_string(), Command::Trim),
+            ("foo".to_string(), Command::Append(1)),
+            ("bar".to_string(), Command::Append(5)),
+        ];
+```
+
+我们能知道函数`transformer`的输入`iuput: Vec<(String, Command)>`
+
+但是根据：
+
+```rust
+        assert_eq!(
+            output,
+            [
+                "HELLO",
+                "all roads lead to rome!",
+                "foobar",
+                "barbarbarbarbarbar",
+            ]
+        );
+```
+
+我们**不该简单认为**函数`transformer`的输入就是`output: [&str]`。
+
+因为测试断言中右边是一个数组字面量，动态大小类型不能作为返回值。
+
+可以有函数`fn f() -> [i32; 3] { [1,2,3] }`，但是这种长度固定且已知。
+而在本例中，我们的输出是**动态大小类型（DST）**，即函数不知道最终返回的数组中有多少个数据，
+即**不能返回未标注长度的切片 [T]**。
+
+`Vec<String>`和`[&str; 4]`之间实现了`PartialEq`。
+Rust允许`Vec<String>`与`&[&str]`比较，所以`Vec<String>`才是实际应该返回的类型。
+
+接下来，我们需要遍历输入中的元组，利用`for`循环，我们有两种方式：
+
+1. `for (old_string, command) in input.iter() {}`，借用`input`中的值。
+2. `for (old_string, command) in input.into_iter() {}`，消耗`input`，直接获取所有权。
+
+实际这两种方式都可以达到目的，但是由于后续不会再使用`input`，因此我们更推荐第二种，直接获取`input`所有权。
+
+最后，在`match`的三个分支中，我要清楚，我们不能返回一个`&str/&String`，这样会导致悬垂引用。
+
+`old_string.to_uppercase()`和`format!()`都会产生临时的`String`对象。
+如果在`match`分支中取得它们的`&str`引用，这个临时值在`match`表达式结束后就被销毁，导致`out`中存储的引用变成悬垂指针。
+Rust会阻止这种代码编译。
+
+最后，这里有更加rustacean的写法：
+
+```rust
+    pub fn transformer(input: Vec<(String, Command)>) -> Vec<String> {
+        input
+            .into_iter()
+            .map(|(old_string, command)| match command {
+                Command::Uppercase => old_string.to_uppercase(),
+                Command::Trim => old_string.trim().to_string(),
+                Command::Append(count) => format!("{}{}", old_string, "bar".repeat(count)),
+            })
+            .collect()
+    }
+```
+
+> 学吧，学无止境，太深了。
+> 以后但凡有for循环的东西，我第一个想到的就是链式调用
