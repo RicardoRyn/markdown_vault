@@ -75,7 +75,69 @@ ssh-copy-id aaa@xxx.xxx.xxx.xxx                       # 将本地的ssh公钥复
 git remote set-url origin git@github.com:RicardoRyn/nvim.git
 ```
 
----
+## GPG签名
+
+Git 中的 commit 签名通常使用 GPG 密钥 对 commit 的内容（如作者、时间、树对象、父 commit 等）进行加密，生成一段独特的签名数据。
+当你把一个签过名的 commit 推送到 GitHub 等平台时，平台会用你的公钥解密签名，确认该 commit 确实是由你（持有私钥的人）创建的，且内容未被篡改。
+
+邮箱可以伪造，账号只验证推送者，不验证历史。这些只是**身份声明**。
+
+签名防止伪造，防篡改，是身份验证。
+
+```bash
+gpg --full-generate-key
+```
+
+1. 选择算法：直接按 回车键，使用默认推荐的 RSA and RSA 算法。
+2. 选择密钥长度：推荐输入 4096 并按回车，这比默认的 3072 位更安全。
+3. 设置有效期：直接按 回车键，选择“密钥永不过期”是最方便的。
+4. 确认信息：系统会列出你刚才的设置，确认无误后输入 y 并按回车。
+5. 填写用户ID：这是至关重要的一步。你需要填写你的姓名（任意）、与你 GitHub 邮箱完全一致的邮箱地址（确保大小写也相同），以及可选的注释。
+6. 设置密码（Passphrase）：为了保护你的密钥，你需要输入并确认一个强大的密码并务必牢记。这一步会弹出密码输入框。
+
+```bash
+gpg --list-secret-keys --keyid-format=long
+```
+
+命令会输出类似如下的信息：
+
+```text
+gpg: checking the trustdb
+gpg: marginals needed: 3  completes needed: 1  trust model: pgp
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+/c/Users/RicardoRyn/.gnupg/pubring.kbx
+--------------------------------------
+sec   rsa4096/XXXXXXXXXXXXXXXX 2026-05-28 [SC]
+      YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+uid                 [ultimate] RicardoRyn (T8) <RicardoRyn1317@gmail.com>
+ssb   rsa4096/ZZZZZZZZZZZZZZZZ 2026-05-28 [E]
+```
+
+> X：主密钥ID（16位）可公开。为Y的后16位，是公钥的简短标识。
+> Y：主密钥指纹（40位）可公开。是公钥的完整哈希值，用于验证密钥的真实性。
+> Z：子密钥ID（16位），可公开。
+> 私钥存储在 ~/.gnupg/private-keys-v1.d/ 目录下的文件
+
+配置 Git 使用你的 GPG 密钥：
+
+```bash
+# 1. 设置默认签名密钥 (用你的密钥ID替换)
+git config --global user.signingkey XXXXXXXXXXXXXXXX
+# 2. 启用自动签名所有提交
+git config --global commit.gpgsign true
+```
+
+如果在 Windows 上后续步骤遇到问题，你需要明确告诉 Git 使用哪个 GPG 程序。
+
+```bash
+git config --global gpg.program "C:\Program Files (x86)\GnuPG\bin\gpg.exe"
+```
+
+最后记得把公钥添加到你的代码托管平台。
+
+```bash
+gpg --armor --export XXXXXXXXXXXXXXXX # 其输出的内容，复制到Github等代码托管网站k
+```
 
 ## 操作
 
@@ -192,9 +254,9 @@ git push origin --delete v1.0.0 # 删除远程tag
 ```
 
 ## 工作流
+
 视频1：[十分钟学会正确的github工作流，和开源作者们使用同一套流程-哔哩哔哩](https://b22.tv/vR4P09H)
 视频2：[看完这个，你终于能理解 Git 了 | LearnThatStack](https://www.bilibili.com/video/BV1va2ZBzEhx/?vd_source=01c6c9737025720657c5880642dc4282)
-
 
 # 理解`checkout`, `reset`, `revert`
 
@@ -266,12 +328,11 @@ git通过**HEAD**理解你在哪里，在做什么。
 
 1. **工作区**原有内容不变。
 1. **暂存区**原有内容移动到**工作区**。
-2. **orphan commits**的内容移动到工作区。
+1. **orphan commits**的内容移动到工作区。
 
 总结：安全！所有内容依旧存在，只是全部移动到**工作区**。
 
 ### --hard
-
 
 1. 工作区重置（无法找回）。
 2. 暂存区重置（无法找回）。
