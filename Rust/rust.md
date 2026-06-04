@@ -3,7 +3,7 @@
 `rustc`是rust的编译器，可以直接运行某个rust脚本，例如：
 
 ```bash
-rustc main.rs
+rustc main.rs # 生成二进制文件
 ```
 
 `cargo`是rust的*构建工具*以及*包管理工具*。
@@ -23,14 +23,15 @@ edition = "2024"
 [dependencies]
 ```
 
+`cargo update <crate>`更新指定的crate。
 `cargo check`检查程序确保可以编译。
 `cargo build`编译程序，但不运行。
 `cargo run`编译且运行。
 
 `cargo test`：
 
-1. 捕获（capture）测试过程中打印到控制台的所有输出（例如 println!、eprintln! 等）。
-2. 不显示任何输出（只显示 ok）。
+1. 捕获测试过程中打印到控制台的所有输出（例如 println!、eprintln! 等）。
+2. 捕获表示都被抓走了，你看不到了，所以不显示任何输出（只显示 ok）。
 3. 测试失败时，会显示该测试产生的输出，以帮助调试。
 
 `cargo test -- --nocapture`：
@@ -40,14 +41,18 @@ edition = "2024"
 
 ## 2. 编写一个猜数字游戏
 
-`cargo update <crate>`更新指定的crate。
+略。
 
 ## 3. 常见编程概念
 
+**常量必须显式标注类型。**
+**常量必须显式标注类型。**
+**常量必须显式标注类型。**
+
+编译时常量：`const`在编译时就被求值并内联到使用处，编译器需要知道精确的类型以确定内存布局和操作语义。
+
 ```rust
 fn main() {
-    let x = 3; //不可变变量。
-    let mut x = 3; //可变变量。
     const PI: f64 = 3.1415926; // 常量必须显式标注类型
 }
 ```
@@ -83,7 +88,7 @@ trait MyTrait {
 与python不一样，rust中`if`后面**只能**跟`bool`值。
 
 ```rust
-// 错误！
+// ❌，错误！
 fn main() {
     let number = 3;
 
@@ -92,7 +97,7 @@ fn main() {
     }
 }
 
-// 正确
+// ✅，正确
 fn main() {
     let number = 3;
 
@@ -177,8 +182,6 @@ fn takes_and_gives_back(a_string: String) -> String {
 
 ### 引用与借用
 
-引用符号为`&`，解引用符号为`*`。
-
 ```rust
 // s1是栈上的结构（指针，长度，容量），其中指针执行堆上的数据
 // s2是栈上的结构，其中指针指向栈上的s1的指针
@@ -200,12 +203,13 @@ fn calculate_length(s2: &String) -> usize {
 - 同时存在可变引用和不可变引用，错误！
 
 ```rust
-// 错误！悬垂引用
+// ❌，错误！悬垂引用
 
 fn main() {
     let reference_to_nothing = dangle();
 }
 
+// 一个函数，如果参数里没有引用，返回值大概率不应该是引用（十分容易导致悬垂引用）
 fn dangle() -> &String {
     // dangle 返回一个字符串的引用
 
@@ -265,12 +269,10 @@ mod outer {
 fn main() {
     let pub_s = outer::PublicStruct {
         public_field: 5,
-        private_field: 0,
+        private_field: 0, // ❌，错误：private_field 是私有的
     };
-    // 错误：private_field 是私有的
 
-    // let priv_s = outer::PrivateStruct { field: 10 };
-    // 错误：PrivateStruct 是私有的，外部无法使用
+    let priv_s = outer::PrivateStruct { field: 10 }; // ❌，错误：PrivateStruct 是私有的，外部无法使用
 }
 ```
 
@@ -318,8 +320,8 @@ struct Point {
 
 enum Shape {
     Circle(f64),                  // 元组变体
-    Rectangle { w: i32, h: i32 }, // 结构体变体（匿名结构体）
-    Polygon(Point),               // 包含一个 Point 结构体
+    Rectangle { w: i32, h: i32 }, // 匿名结构体变体
+    Polygon(Point),               // 包含一个 Point 结构体的变体
 }
 
 fn main() {
@@ -354,11 +356,6 @@ fn main() {
     // cp.color 的类型是 Color（枚举类型）
 }
 ```
-
-枚举**不是**多个结构体的语法糖，而是一种类型论中不可或缺的构造（sum type），结构体是 product type，两者互补。
-没有枚举，许多模式（如 Option、Result、状态机）将难以安全表达。
-因此，不能说“绝大部分情况可用结构体替代”，而是根据需求选择：需要“并且”用结构体，需要“或者”用枚举。
-尽管它们有时候很相似：
 
 ```rust
 fn main() {
@@ -409,7 +406,7 @@ fn main() {
 
 枚举的所有变体共享同一个`impl`块中的方法。
 如果希望枚举的前2个变体该有某方法，而后2个变体不该有该方法。
-最合理的做法是，继续拆分该枚举，组织成2个新的枚举。
+最合理的做法是，**继续拆分该枚举，组织成2个新的枚举**。
 
 `Option<T>`是一个**泛型**，泛型参数会生成不同的类型。
 也就是说，如果我们自己定义一个枚举，变量1是这个枚举的变体1，变量2是这个枚举的变体2，这2个变量仍是同一个类型。
@@ -455,7 +452,7 @@ fn main() {
 
 ### if let和let else简洁控制流
 
-所有**只有两个分支**的`match`都可以改写成`if let ... else`形式。
+所有**只有两个分支**的`match`（且第二个分支不打算从中获取变量）都可以改写成`if let ... else`形式。
 
 ```rust
 fn main() {
@@ -465,7 +462,7 @@ fn main() {
         _ => (),
     }
 
-    // if let 模式1(变量) = 表达式 {
+    // if let 模式1 = 表达式 {
     //     表达式1
     // }
 
@@ -988,7 +985,15 @@ mod tests {
         );
 ```
 
-我们**不该简单认为**函数`transformer`的输入就是`output: [&str]`。
+**不要看到`assert_eq!`后面是啥类型，就觉返回值就是啥类型！**
+**不要看到`assert_eq!`后面是啥类型，就觉返回值就是啥类型！**
+**不要看到`assert_eq!`后面是啥类型，就觉返回值就是啥类型！**
+
+**`assert_eq!` 比较的是值，而不是类型。**
+**`assert_eq!` 比较的是值，而不是类型。**
+**`assert_eq!` 比较的是值，而不是类型。**
+
+我们不该简单认为函数`transformer`的输入就是`output: [&str]`。
 
 因为测试断言中右边是一个数组字面量，动态大小类型不能作为返回值。
 
@@ -996,8 +1001,11 @@ mod tests {
 而在本例中，我们的输出是**动态大小类型（DST）**，即函数不知道最终返回的数组中有多少个数据，
 即**不能返回未标注长度的切片 [T]**。
 
-`Vec<String>`和`[&str; 4]`之间实现了`PartialEq`。
-Rust允许`Vec<String>`与`&[&str]`比较，所以`Vec<String>`才是实际应该返回的类型。
+**`String`和`&str`之间可以进行比较（因为它们都实现了 `PartialEq<str>`）。**
+**`String`和`&str`之间可以进行比较（因为它们都实现了 `PartialEq<str>`）。**
+**`String`和`&str`之间可以进行比较（因为它们都实现了 `PartialEq<str>`）。**
+
+Rust允许`Vec<String>`与`&[&str]`比较，**所以`Vec<String>`才是实际应该返回的类型**。
 
 接下来，我们需要遍历输入中的元组，利用`for`循环，我们有两种方式：
 
@@ -1271,6 +1279,10 @@ impl<T: Display> ToString for T {}
 ```
 
 ### 生命周期确保引用有效
+
+**很少看到函数参数不是引用，但返回值是引用的情况。**
+**很少看到函数参数不是引用，但返回值是引用的情况。**
+**很少看到函数参数不是引用，但返回值是引用的情况。**
 
 #### 函数中的生命周期
 

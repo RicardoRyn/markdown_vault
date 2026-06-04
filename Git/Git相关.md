@@ -139,6 +139,20 @@ git config --global gpg.program "C:\Program Files (x86)\GnuPG\bin\gpg.exe"
 gpg --armor --export XXXXXXXXXXXXXXXX # 其输出的内容，复制到Github等代码托管网站k
 ```
 
+编辑`~/.gnupg/gpg-agent.conf`文件, 降低输入密码的频次：
+
+```bash
+default-cache-ttl 28800 # 约8小时
+max-cache-ttl 28800     # 约8小时
+```
+
+重启gpg-agent服务：
+
+```
+gpgconf --kill gpg-agent
+gpgconf --launch gpg-agent
+```
+
 ## 操作
 
 ### 常用命令
