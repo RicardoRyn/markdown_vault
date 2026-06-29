@@ -11,10 +11,7 @@
 ###### H6 Header
 
 _italic text_
-_italic text_
 **bold text**
-**bold text**
-**_bold and italic_**
 **_bold and italic_**
 ~~strikethrough~~
 `inline code`
@@ -47,6 +44,21 @@ Ordered:
 > > [!BUG]
 > > abc
 
+```diff
+--- config.txt
++++ config.txt
+@@ -1,5 +1,5 @@
+ User=admin
+-Password=oldpass
++Password=newpass
+ Host=localhost
+ Port=8080
+```
+
+```
+Unknown text
+```
+
 ```javascript
 function hello() {
   console.log("Hello, world!");
@@ -61,5 +73,5 @@ function hello() {
 ---
 
 - [x] Completed task
-- [ ] Incomplete task
+- [/] Incomplete task
 - [ ] Another task
