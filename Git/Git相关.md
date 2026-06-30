@@ -142,8 +142,9 @@ gpg --armor --export XXXXXXXXXXXXXXXX # 其输出的内容，复制到Github等�
 编辑`~/.gnupg/gpg-agent.conf`文件, 降低输入密码的频次：
 
 ```bash
-default-cache-ttl 28800 # 约8小时
-max-cache-ttl 28800     # 约8小时
+# 8小时
+default-cache-ttl 28800 # 看的是“最后一次使用的时间”（空闲超时）。
+max-cache-ttl 28800     # 看的是“密码第一次输入的时间”（绝对超时）
 ```
 
 重启gpg-agent服务：
