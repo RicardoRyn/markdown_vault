@@ -189,4 +189,3 @@ print(KL)
 KL = stats.entropy(y, x)
 print(KL)
 ```
-
